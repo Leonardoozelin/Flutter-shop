@@ -29,7 +29,7 @@ class ProductItem extends StatelessWidget {
         footer: GridTileBar(
           backgroundColor: Colors.black87,
           leading: Consumer<Product>(
-            builder:(ctx, product, _) => IconButton(
+            builder: (ctx, product, _) => IconButton(
               icon: Icon(
                 product.isFavorite ? Icons.favorite : Icons.favorite_border,
                 color: Theme.of(context).accentColor,
@@ -49,6 +49,16 @@ class ProductItem extends StatelessWidget {
               color: Theme.of(context).accentColor,
             ),
             onPressed: () {
+              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Produto adicionado com sucesso!'),
+                  duration: Duration(seconds: 5),
+                  action: SnackBarAction(label: 'DESFAZER', onPressed: (){
+                    cart.removeSingleItem(product.id);
+                  }),
+                ),
+              );
               cart.addItem(product);
             },
           ),
