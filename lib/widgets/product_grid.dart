@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:shop/models/product.dart';
 import 'package:shop/provider/products.dart';
+import 'package:shop/widgets/emptyCart.dart';
 import 'package:shop/widgets/product_item.dart';
 
 class ProductGrid extends StatelessWidget {
@@ -19,17 +19,7 @@ class ProductGrid extends StatelessWidget {
         : productProvider.items;
 
     return products.isEmpty
-        ? Center(
-          child: Column(
-            children: [
-              Image.network('https://static.thenounproject.com/png/632851-200.png'),
-              Text(
-                  'Não possui nenhum item favorito',
-                  style: TextStyle(fontSize: 20),
-                ),
-            ],
-          ),
-        )
+        ? EmptyCart(label: 'Não possui nenhum item favorito')
         : GridView.builder(
             padding: const EdgeInsets.all(10),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
