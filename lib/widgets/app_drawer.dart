@@ -12,6 +12,7 @@ class AppDrawer extends StatelessWidget {
       child: Column(
         children: [
           AppBar(
+            brightness: Brightness.dark,
             title: Text('Bem vindo Usuario!'),
             automaticallyImplyLeading: false,
           ),

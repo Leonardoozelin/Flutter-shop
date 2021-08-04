@@ -38,6 +38,7 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
     );
     return Scaffold(
       appBar: AppBar(
+        brightness: Brightness.dark,
         title: Text('Minha Loja'),
         actions: [
           Consumer<Cart>(

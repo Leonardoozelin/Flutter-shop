@@ -10,6 +10,7 @@ class ProductDetailScreen extends StatelessWidget {
         ModalRoute.of(context)!.settings.arguments as Product;
     return Scaffold(
       appBar: AppBar(
+        brightness: Brightness.dark,
         title: Text(product.title),
       ),
       body: SingleChildScrollView(

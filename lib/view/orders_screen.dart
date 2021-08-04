@@ -14,6 +14,7 @@ class OrdersScreem extends StatelessWidget {
     final Orders orders = Provider.of(context);
     return Scaffold(
       appBar: AppBar(
+        brightness: Brightness.dark,
         title: Text('Meus Pedidos'),
       ),
       drawer: AppDrawer(),

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop/provider/products.dart';
+import 'package:shop/utils/app_routes.dart';
 import 'package:shop/widgets/app_drawer.dart';
+import 'package:shop/widgets/product_item.dart';
 
 class ProductsScreen extends StatelessWidget {
   const ProductsScreen({Key? key}) : super(key: key);
@@ -11,10 +13,13 @@ class ProductsScreen extends StatelessWidget {
     final products = Provider.of<Products>(context);
     return Scaffold(
       appBar: AppBar(
+        brightness: Brightness.dark,
         title: Text('Gerenciar Produtos'),
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.of(context).pushNamed(AppRoutes.PRODUCT_FORM);
+            },
             icon: Icon(Icons.add),
           ),
         ],
@@ -25,16 +30,11 @@ class ProductsScreen extends StatelessWidget {
         child: ListView.builder(
           itemCount: products.itemsCount,
           itemBuilder: (ctx, i) {
-            return ListTile(
-              leading: CircleAvatar(
-                child: Image.network(products.items[i].imageUrl, fit: BoxFit.cover,),
-              ),
-              title: Text(products.items[i].title.toString()),
-              trailing: IconButton(
-                icon: Icon(Icons.edit),
-                onPressed: (){},
-                color: Theme.of(context).primaryColor,
-              ),
+            return Column(
+              children: [
+                ProductItem(products.items[i]),
+                Divider(),
+              ],
             );
           },
         ),
