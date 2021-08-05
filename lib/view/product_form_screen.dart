@@ -1,4 +1,7 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:shop/provider/product.dart';
 
 class ProductFormScreen extends StatefulWidget {
   const ProductFormScreen({Key? key}) : super(key: key);
@@ -12,6 +15,8 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   final _descriptionFocusNode = FocusNode();
   final _imageUrlFocusNode = FocusNode();
   final _imageURlController = TextEditingController();
+  final _form = GlobalKey<FormState>();
+  final _formData = Map<String, Object>();
 
   @override
   void initState() {
@@ -20,9 +25,43 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   }
 
   void _updateImageUrl() {
-    setState(() {
-      
-    });
+    if(isValidImageUrl(_imageURlController.text)){
+      setState(() {});
+    } 
+  }
+
+  bool isValidImageUrl(String url) {
+    bool isValidProtocolHttp = url.toLowerCase().startsWith('http://');
+    bool isValidProtocolHttps = url.toLowerCase().startsWith('https://');
+    bool endsWithPng = url.toLowerCase().endsWith('.png');
+    bool endsWithJpg = url.toLowerCase().endsWith('.jpg');
+    bool endsWithJpeg = url.toLowerCase().endsWith('.jpeg');
+
+    bool emailValid = RegExp(
+            r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+        .hasMatch(url);
+
+    return (isValidProtocolHttp || isValidProtocolHttps) &&
+        (endsWithJpeg || endsWithPng || endsWithJpg) || emailValid;
+  }
+
+  void _saveForm() {
+    bool isValid = _form.currentState!.validate();
+    if (!isValid) {
+      return;
+    }
+    _form.currentState!.save();
+
+    final newProduct = Product(
+      id: Random().nextDouble().toString(),
+      title: _formData['title']!.toString(),
+      price: double.parse(_formData['price'].toString()),
+      description: _formData['description'].toString(),
+      imageUrl: _formData['imageUrl'].toString(),
+    );
+    print(newProduct.id);
+    print(newProduct.title);
+    print(newProduct.price);
   }
 
   @override
@@ -40,10 +79,17 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       appBar: AppBar(
         brightness: Brightness.dark,
         title: Text('Formulário Produto'),
+        actions: [
+          IconButton(
+            onPressed: () => _saveForm(),
+            icon: Icon(Icons.save),
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(15),
         child: Form(
+          key: _form,
           child: ListView(
             children: [
               TextFormField(
@@ -51,6 +97,13 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                 textInputAction: TextInputAction.next,
                 onFieldSubmitted: (_) {
                   FocusScope.of(context).requestFocus(_priceFocusNode);
+                },
+                onSaved: (value) => _formData['title'] = value!,
+                validator: (value) {
+                  if (value!.trim().isEmpty || value.trim().length < 3) {
+                    return 'Informe um título valido';
+                  }
+                  return null;
                 },
               ),
               TextFormField(
@@ -61,24 +114,50 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                 onFieldSubmitted: (_) {
                   FocusScope.of(context).requestFocus(_descriptionFocusNode);
                 },
+                onSaved: (value) => _formData['price'] = double.parse(value!),
+                validator: (value){
+                  var newPrice = double.tryParse(value!);
+                  bool isInvalid = newPrice == null || newPrice <= 0;
+                  if(value.trim().isEmpty || isInvalid){
+                    return 'Informe um valor válido';
+                  }
+                  return null;
+                },
               ),
               TextFormField(
                 decoration: InputDecoration(labelText: 'Descrição'),
                 maxLines: 3,
                 keyboardType: TextInputType.multiline,
                 focusNode: _descriptionFocusNode,
+                onSaved: (value) => _formData['description'] = value!,
+                validator: (value){
+                  if (value!.trim().isEmpty || value.trim().length < 10){
+                    return 'Informe uma descrição válida';
+                  }
+
+                  return null;
+                },
               ),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Expanded(
                     child: TextFormField(
-                      decoration: InputDecoration(labelText: 'URL da Imagem'),
-                      keyboardType: TextInputType.url,
-                      textInputAction: TextInputAction.done,
-                      focusNode: _imageUrlFocusNode,
-                      controller: _imageURlController,
-                    ),
+                        decoration: InputDecoration(labelText: 'URL da Imagem'),
+                        keyboardType: TextInputType.url,
+                        textInputAction: TextInputAction.done,
+                        focusNode: _imageUrlFocusNode,
+                        controller: _imageURlController,
+                        onSaved: (value) => _formData['imageUrl'] = value!,
+                        onFieldSubmitted: (_) {
+                          _saveForm();
+                        },
+                        validator: (value) {
+                          if (!isValidImageUrl(value!) || value.trim().isEmpty) {
+                            return 'URL Invalida!';
+                          }
+                          return null;
+                        }),
                   ),
                   Container(
                     height: 100,
