@@ -1,8 +1,9 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:shop/provider/product.dart';
+import 'package:provider/provider.dart';
 
+import 'package:shop/provider/product.dart';
+import 'package:shop/provider/products.dart';
+ 
 class ProductFormScreen extends StatefulWidget {
   const ProductFormScreen({Key? key}) : super(key: key);
 
@@ -22,6 +23,19 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   void initState() {
     super.initState();
     _imageUrlFocusNode.addListener(_updateImageUrl);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if(_formData.isEmpty){
+      final product = ModalRoute.of(context)!.settings.arguments as Product;
+      _formData['id'] = product.id.isEmpty ? '' : product.id;
+      _formData['title'] = product.title;
+      _formData['description'] = product.description;
+      _formData['price'] = product.price; 
+      _formData['imageUrl'] = product.imageUrl;
+    }
   }
 
   void _updateImageUrl() {
@@ -53,15 +67,22 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     _form.currentState!.save();
 
     final newProduct = Product(
-      id: Random().nextDouble().toString(),
+      id: _formData['id'].toString(),
       title: _formData['title']!.toString(),
       price: double.parse(_formData['price'].toString()),
       description: _formData['description'].toString(),
       imageUrl: _formData['imageUrl'].toString(),
     );
-    print(newProduct.id);
-    print(newProduct.title);
-    print(newProduct.price);
+
+    final products = Provider.of<Products>(context, listen: false);
+
+    if(_formData['id'] == null){
+      products.addProduct(newProduct);
+    } else {
+      products.updateProduct(newProduct);
+    }
+
+    Navigator.of(context).pop();
   }
 
   @override
