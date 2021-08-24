@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 
 import 'package:shop/provider/product.dart';
 import 'package:shop/provider/products.dart';
- 
+
 class ProductFormScreen extends StatefulWidget {
   const ProductFormScreen({Key? key}) : super(key: key);
 
@@ -28,20 +28,32 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if(_formData.isEmpty){
-      final product = ModalRoute.of(context)!.settings.arguments as Product;
-      _formData['id'] = product.id.isEmpty ? '' : product.id;
-      _formData['title'] = product.title;
-      _formData['description'] = product.description;
-      _formData['price'] = product.price; 
-      _formData['imageUrl'] = product.imageUrl;
+    if (ModalRoute.of(context)!.settings.arguments != null) {
+      if (_formData.isEmpty) {
+        final product = ModalRoute.of(context)!.settings.arguments as Product;
+        _formData['id'] = product.id.isEmpty ? '' : product.id;
+        _formData['title'] = product.title.isEmpty ? '' : product.title;
+        _formData['description'] =
+            product.description.isEmpty ? '' : product.description;
+        _formData['price'] = product.price == 0.0 ? 0 : product.price;
+        _formData['imageUrl'] =
+            product.imageUrl.isEmpty ? '' : product.imageUrl;
+
+        _imageURlController.text = _formData['imageUrl'].toString();
+      }
+    } else {
+      _formData['id'] = '';
+      _formData['title'] = '';
+      _formData['description'] = '';
+      _formData['price'] = '';
+      _formData['imageUrl'] = '';
     }
   }
 
   void _updateImageUrl() {
-    if(isValidImageUrl(_imageURlController.text)){
+    if (isValidImageUrl(_imageURlController.text)) {
       setState(() {});
-    } 
+    }
   }
 
   bool isValidImageUrl(String url) {
@@ -56,7 +68,8 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
         .hasMatch(url);
 
     return (isValidProtocolHttp || isValidProtocolHttps) &&
-        (endsWithJpeg || endsWithPng || endsWithJpg) || emailValid;
+            (endsWithJpeg || endsWithPng || endsWithJpg) ||
+        emailValid;
   }
 
   void _saveForm() {
@@ -66,7 +79,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     }
     _form.currentState!.save();
 
-    final newProduct = Product(
+    final product = Product(
       id: _formData['id'].toString(),
       title: _formData['title']!.toString(),
       price: double.parse(_formData['price'].toString()),
@@ -76,10 +89,10 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
 
     final products = Provider.of<Products>(context, listen: false);
 
-    if(_formData['id'] == null){
-      products.addProduct(newProduct);
+    if (_formData['id'] == '' || _formData['id'] == null) {
+      products.addProduct(product);
     } else {
-      products.updateProduct(newProduct);
+      products.updateProduct(product);
     }
 
     Navigator.of(context).pop();
@@ -114,6 +127,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           child: ListView(
             children: [
               TextFormField(
+                initialValue: _formData['title'].toString(),
                 decoration: InputDecoration(labelText: 'Título'),
                 textInputAction: TextInputAction.next,
                 onFieldSubmitted: (_) {
@@ -128,6 +142,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                 },
               ),
               TextFormField(
+                initialValue: _formData['price'].toString(),
                 decoration: InputDecoration(labelText: 'Preço'),
                 textInputAction: TextInputAction.next,
                 focusNode: _priceFocusNode,
@@ -136,23 +151,24 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                   FocusScope.of(context).requestFocus(_descriptionFocusNode);
                 },
                 onSaved: (value) => _formData['price'] = double.parse(value!),
-                validator: (value){
+                validator: (value) {
                   var newPrice = double.tryParse(value!);
                   bool isInvalid = newPrice == null || newPrice <= 0;
-                  if(value.trim().isEmpty || isInvalid){
+                  if (value.trim().isEmpty || isInvalid) {
                     return 'Informe um valor válido';
                   }
                   return null;
                 },
               ),
               TextFormField(
+                initialValue: _formData['description'].toString(),
                 decoration: InputDecoration(labelText: 'Descrição'),
                 maxLines: 3,
                 keyboardType: TextInputType.multiline,
                 focusNode: _descriptionFocusNode,
                 onSaved: (value) => _formData['description'] = value!,
-                validator: (value){
-                  if (value!.trim().isEmpty || value.trim().length < 10){
+                validator: (value) {
+                  if (value!.trim().isEmpty || value.trim().length < 10) {
                     return 'Informe uma descrição válida';
                   }
 
@@ -174,7 +190,8 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                           _saveForm();
                         },
                         validator: (value) {
-                          if (!isValidImageUrl(value!) || value.trim().isEmpty) {
+                          if (!isValidImageUrl(value!) ||
+                              value.trim().isEmpty) {
                             return 'URL Invalida!';
                           }
                           return null;
